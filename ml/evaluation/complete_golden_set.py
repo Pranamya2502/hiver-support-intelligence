@@ -15,17 +15,21 @@ import pandas as pd
 
 # Add repository root to python path to allow importing ml modules
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from ml.taxonomy.intents import get_intent_names
 
+
 GOLDEN_PATH = REPO_ROOT / "data" / "golden" / "golden_set.csv"
 SAMPLE_SIZE = 200
+
 
 # Locked 200-example ground truth annotations
 # Key: index (0-199) in golden_set.csv
 # Value: (gold_intent, gold_escalate, label_notes)
+
 GOLDEN_ANNOTATIONS = {
     0: ("delivery_issue", "false", "Delayed package, routine issue"),
     1: ("delivery_issue", "false", "Delivery status or delay issue"),
@@ -232,15 +236,29 @@ GOLDEN_ANNOTATIONS = {
 
 def complete_and_validate_golden_set():
     print("Loading golden set from:", GOLDEN_PATH)
-    if not GOLDEN_PATH.exists():
-        raise FileNotFoundError(f"Golden set file not found at {GOLDEN_PATH}")
 
-    # Read dataset
-    df = pd.read_csv(GOLDEN_PATH)
+    if not GOLDEN_PATH.exists():
+        raise FileNotFoundError(
+            f"Golden set file not found at {GOLDEN_PATH}"
+        )
+
+    # Read dataset.
+    # Explicit string dtype prevents pandas from inferring gold_escalate
+    # as boolean before the annotation values are written.
+    df = pd.read_csv(
+        GOLDEN_PATH,
+        dtype={
+            "gold_intent": "string",
+            "gold_escalate": "string",
+            "label_notes": "string",
+        },
+    )
 
     # 1. Validate Row Count
     if len(df) != SAMPLE_SIZE:
-        raise ValueError(f"Expected exactly {SAMPLE_SIZE} rows, found {len(df)}")
+        raise ValueError(
+            f"Expected exactly {SAMPLE_SIZE} rows, found {len(df)}"
+        )
 
     # 2. Validate Locked Intent Taxonomy
     valid_intents = set(get_intent_names())
@@ -253,9 +271,12 @@ def complete_and_validate_golden_set():
 
     # Populate fields
     for idx, (intent, escalate, notes) in GOLDEN_ANNOTATIONS.items():
+
         if intent not in valid_intents:
-            raise ValueError(f"Row {idx}: Invalid intent '{intent}' not in locked taxonomy")
-        
+            raise ValueError(
+                f"Row {idx}: Invalid intent '{intent}' not in locked taxonomy"
+            )
+
         df.at[idx, "gold_intent"] = intent
         df.at[idx, "gold_escalate"] = str(escalate).lower()
         df.at[idx, "label_notes"] = notes
@@ -263,55 +284,114 @@ def complete_and_validate_golden_set():
     # Integrity Assertions
     if not df["customer_text"].equals(orig_customer_text):
         raise ValueError("CRITICAL: customer_text was modified!")
+
     if not df["agent_response"].equals(orig_agent_response):
         raise ValueError("CRITICAL: agent_response was modified!")
+
     if not df["tweet_id_customer"].equals(orig_tweet_id_cust):
         raise ValueError("CRITICAL: tweet_id_customer was modified!")
+
     if not df["tweet_id_reply"].equals(orig_tweet_id_reply):
         raise ValueError("CRITICAL: tweet_id_reply was modified!")
 
     # Check for missing values
-    missing_intents = df["gold_intent"].isna() | (df["gold_intent"] == "")
-    missing_escalate = df["gold_escalate"].isna() | (df["gold_escalate"] == "")
-    missing_notes = df["label_notes"].isna() | (df["label_notes"] == "")
+    missing_intents = (
+        df["gold_intent"].isna()
+        | (df["gold_intent"] == "")
+    )
+
+    missing_escalate = (
+        df["gold_escalate"].isna()
+        | (df["gold_escalate"] == "")
+    )
+
+    missing_notes = (
+        df["label_notes"].isna()
+        | (df["label_notes"] == "")
+    )
 
     if missing_intents.any():
-        raise ValueError(f"Found {missing_intents.sum()} rows with missing gold_intent")
+        raise ValueError(
+            f"Found {missing_intents.sum()} rows with missing gold_intent"
+        )
+
     if missing_escalate.any():
-        raise ValueError(f"Found {missing_escalate.sum()} rows with missing gold_escalate")
+        raise ValueError(
+            f"Found {missing_escalate.sum()} rows with missing gold_escalate"
+        )
+
     if missing_notes.any():
-        raise ValueError(f"Found {missing_notes.sum()} rows with missing label_notes")
+        raise ValueError(
+            f"Found {missing_notes.sum()} rows with missing label_notes"
+        )
+
+    # Validate escalation values
+    valid_escalation_values = {"true", "false"}
+
+    invalid_escalations = set(
+        df["gold_escalate"].astype(str).str.lower()
+    ) - valid_escalation_values
+
+    if invalid_escalations:
+        raise ValueError(
+            f"Invalid gold_escalate values found: {invalid_escalations}"
+        )
 
     # Check duplicate tweet pairs
-    duplicate_pairs = df.duplicated(subset=["tweet_id_customer", "tweet_id_reply"]).sum()
+    duplicate_pairs = df.duplicated(
+        subset=["tweet_id_customer", "tweet_id_reply"]
+    ).sum()
+
     if duplicate_pairs > 0:
-        raise ValueError(f"Found {duplicate_pairs} duplicate tweet ID pairs")
+        raise ValueError(
+            f"Found {duplicate_pairs} duplicate tweet ID pairs"
+        )
 
     # Save output
     df.to_csv(GOLDEN_PATH, index=False)
-    print(f"Successfully saved completed golden set to {GOLDEN_PATH}\n")
+
+    print(
+        f"Successfully saved completed golden set to {GOLDEN_PATH}\n"
+    )
 
     # Print Validation Summary
     print("Golden set validation")
     print("---------------------")
     print(f"Rows: {len(df)}")
-    print(f"Intent labels: {len(df) - missing_intents.sum()}/{len(df)}")
-    print(f"Escalation labels: {len(df) - missing_escalate.sum()}/{len(df)}")
-    print(f"Notes: {len(df) - missing_notes.sum()}/{len(df)}")
-    print(f"Invalid intents: 0")
+    print(
+        f"Intent labels: "
+        f"{len(df) - missing_intents.sum()}/{len(df)}"
+    )
+    print(
+        f"Escalation labels: "
+        f"{len(df) - missing_escalate.sum()}/{len(df)}"
+    )
+    print(
+        f"Notes: "
+        f"{len(df) - missing_notes.sum()}/{len(df)}"
+    )
+    print("Invalid intents: 0")
     print(f"Duplicate pairs: {duplicate_pairs}")
 
     print("\nIntent distribution:")
+
     intent_dist = df["gold_intent"].value_counts()
+
     for intent, count in intent_dist.items():
         percentage = (count / len(df)) * 100
-        print(f"  {intent:20s}: {count:3d} ({percentage:5.1f}%)")
+        print(
+            f"  {intent:20s}: {count:3d} ({percentage:5.1f}%)"
+        )
 
     print("\nEscalation distribution:")
+
     esc_dist = df["gold_escalate"].value_counts()
+
     for esc_val, count in esc_dist.items():
         percentage = (count / len(df)) * 100
-        print(f"  {esc_val:20s}: {count:3d} ({percentage:5.1f}%)")
+        print(
+            f"  {str(esc_val):20s}: {count:3d} ({percentage:5.1f}%)"
+        )
 
 
 if __name__ == "__main__":
