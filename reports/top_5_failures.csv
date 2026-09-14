@@ -3,4 +3,5 @@ row_id,customer_text,gold_intent,predicted_intent,gold_escalate,predicted_escala
 7,@AmazonHelp Amazon shipping.,delivery_issue,general_support,False,True,0.6,@123456 Thank you for reaching out about Amazon shipping. We’d be happy to look into options with you. Please contact us here: https://t.co/JzP7hlA23B so we can help!,1.0000001192092896,1,1
 91,Clients @115821 attention à l'arnaque qui tourne par mail !!! https://t.co/UgGWLuJjw1,delivery_issue,general_support,False,True,0.6,"Bonsoir, veuillez faire suivre le message à l’adresse suivante __email__ je vous prie.",0.999999701976776,1,1
 51,@AmazonHelp No. it just diappears.,general_support,order_issue,False,True,0.65,"We don’t have a notification for the shopping list. If you place an order that includes items that are unavailable, you’ll receive an email.",0.9999999403953552,1,1
-20,@117086 EU TE VENEROOOOOO MEUS LIVROS JÁ CHEGARAM SCRR,general_support,delivery_issue,False,True,0.7,"@117086 Oi, que alegria! 😍 Quais livros você comprou? ^AZ",0.9999998807907104,1,1
+85,"@AmazonHelp Ist aktiviert, funktioniert aber nicht. Heute wieder 2x😩 Kam bisher nur 1x an, bei einer Bestellung von Amazon USA. Geht auch anderen so. 🙁",general_support,delivery_issue,False,True,0.7,"Dann, wie vorgeschlagen, bitte im Kundenservice melden: https://t.co/cDHy5WiCek  
+Liebe Grüße ^MF",1.000000238418579,1,1
