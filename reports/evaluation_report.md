@@ -1,6 +1,6 @@
 Evaluation Report
 
-1. Evaluation Objective
+Evaluation Objective
 
 The evaluation measures whether the AI support agent can:
 
@@ -14,7 +14,7 @@ Improve meaningfully over simple baselines.
 
 The evaluation uses a manually labelled 200-example golden set created from AmazonHelp support conversations.
 
-2. Evaluation Dataset
+Evaluation Dataset
 
 The golden set contains 200 examples with:
 
@@ -76,7 +76,7 @@ Total
 
 Because of this imbalance, both accuracy and Macro-F1 are reported.
 
-3. Baselines
+Baselines
 
 Majority-Class Baseline
 
@@ -98,7 +98,7 @@ This provides a simple retrieval-only reference for evaluating generated replies
 
 Important limitation: the golden examples were sampled from the same historical corpus used by the retriever. Therefore, exact historical matches can occur. The reported similarity for this baseline should not be interpreted as an independent held-out retrieval score.
 
-4. Metrics
+Metrics
 
 Intent Classification
 
@@ -132,9 +132,9 @@ Overall quality: 1–5
 
 A human validation sample is intended to measure agreement between the LLM judge and human assessment.
 
-5. Results
+Results
 
-The latest provider-limited run successfully completed 145 of the 200 AI-agent evaluations.
+The final evaluation successfully completed all 200 AI-agent evaluations with no API/run errors.
 
 System
 
@@ -154,11 +154,11 @@ TF-IDF + Logistic Regression
 
 49.19%
 
-AI Agent*
+AI Agent
 
-58.62%
+62.00%
 
-45.42%
+51.69%
 
 Additional AI-agent results:
 
@@ -168,37 +168,45 @@ Result
 
 Successful evaluations
 
-145 / 200
+200 / 200
 
 Evaluation coverage
 
-72.50%
+100.00%
 
 Escalation accuracy
 
-63.45%
+61.50%
 
 API/run errors
 
-55
+0
 
 Interpretation
 
-The classical TF-IDF baseline currently outperforms the AI agent on intent classification in this partial run.
+The classical TF-IDF baseline achieves higher raw intent accuracy than the AI agent (66.00% vs 62.00%), while the AI agent achieves higher Macro-F1 (51.69% vs 49.19%).
 
-The AI agent achieves substantially better intent performance than the majority baseline, but it does not yet beat the supervised TF-IDF baseline.
+This shows that the AI agent is more balanced across the nine intent classes even though it has lower overall accuracy on this imbalanced golden set.
 
 This is useful evidence rather than a failure of the evaluation: the LLM-based approach should not automatically be assumed to outperform a simpler classifier.
 
 The AI agent also provides capabilities that the TF-IDF classifier does not provide, including historical evidence retrieval, grounded response generation, and explicit escalation.
 
-6. LLM Judge Results
+LLM Judge Results
 
-The LLM judge was implemented with a fixed four-dimension rubric.
+The LLM judge uses a fixed four-dimension rubric:
 
-The current provider-limited judge run produced only 3 successful judgments because the same LLM-provider quota was reached during evaluation.
+Relevance: 1–5
 
-The available judge results are:
+Groundedness: 1–5
+
+Helpfulness: 1–5
+
+Overall quality: 1–5
+
+After the provider quota reset, the judge was rerun for the remaining responses. The latest run successfully produced 59 new judgments; previously completed judgments were preserved by the resumable judge workflow.
+
+For the newly completed judge batch, the averages were:
 
 Criterion
 
@@ -206,25 +214,23 @@ Average Score
 
 Relevance
 
-4.33 / 5
+3.63 / 5
 
 Groundedness
 
-5.00 / 5
+4.41 / 5
 
 Helpfulness
 
-4.00 / 5
+3.54 / 5
 
 Overall
 
-4.00 / 5
+3.49 / 5
 
-These values are not treated as final benchmark results because only three responses were successfully judged.
+These averages describe the newly successful judge batch rather than a clean 200-example aggregate, because the judge file was built incrementally across provider-limited runs. They should therefore be reported as a partial judge-quality result, not as a definitive 200-example benchmark.
 
-The evaluation harness can be rerun after the provider quota resets.
-
-7. Top 5 Failure Cases
+Top 5 Failure Cases
 
 The failure analysis prioritizes cases with incorrect intent, incorrect escalation, and low model confidence.
 
@@ -298,7 +304,7 @@ Confidence: 0.70
 
 Hypothesis: Informal multilingual text and delivery-related vocabulary can cause the classifier to over-associate the message with delivery_issue.
 
-8. Failure Patterns
+Failure Patterns
 
 Across the observed failures, four main patterns appear:
 
@@ -312,11 +318,11 @@ Low confidence causes conservative escalation, reducing automation coverage.
 
 These observations suggest that the next iteration should focus on context, multilingual robustness, and confidence calibration rather than simply increasing model complexity.
 
-9. What Is Misleading About the Headline Number?
+What Is Misleading About the Headline Number?
 
-The AI Agent's current 58.62% intent accuracy should not be presented as a definitive production accuracy.
+The AI Agent's 62.00% intent accuracy should not be presented as a definitive production accuracy.
 
-It is based on only 145 successful evaluations out of 200, because 55 LLM calls were blocked by the provider's daily token limit.
+The final AI evaluation covers all 200 golden examples, but the golden set is small and imbalanced.
 
 Other limitations are:
 
@@ -328,17 +334,15 @@ Several examples are extremely short or context-dependent.
 
 The nearest-response baseline uses the same historical corpus from which the golden set was sampled, allowing exact matches.
 
-Therefore, the current result is best described as a controlled prototype evaluation under provider-limited coverage, not a production performance estimate.
+The LLM-judge averages are based on incrementally completed judge results rather than a clean, independently held-out 200-example judge sample.
 
-10. Judge-Human Agreement
+Therefore, the result is best described as a controlled prototype evaluation, not a production performance estimate.
 
-The project includes a human-validation workflow for checking whether the LLM judge agrees with human assessment.
+Judge-Human Agreement
 
-The human-validation file is:
+The project includes a human-validation workflow for checking whether the LLM judge agrees with manual assessment.
 
-reports/human_validation.csv
-
-The validation schema includes:
+The validation sample contains 20 examples and the following human scores:
 
 Human relevance
 
@@ -348,11 +352,23 @@ Human helpfulness
 
 Human overall score
 
-The current provider limitation resulted in only three successful LLM-judge examples, so a statistically meaningful judge-human agreement number is not claimed yet.
+Exact agreement with the LLM judge on the reviewed sample was:
 
-After the judge run is completed, the validation sample should be scored by a human and exact agreement / within-one agreement should be reported here.
+Relevance: 95%
 
-11. Reproducibility
+Groundedness: 95%
+
+Helpfulness: 100%
+
+Overall: 80%
+
+Average exact agreement across the four dimensions: 92.5%.
+
+Within-one agreement was 100% across the reviewed dimensions.
+
+This is a small validation sample, so it is evidence of judge consistency rather than a statistically definitive estimate of judge reliability.
+
+Reproducibility
 
 The evaluation is implemented as executable Python scripts.
 
@@ -374,7 +390,7 @@ python ml/evaluation/human_validation.py
 
 The evaluation runner is resumable and preserves successful results, allowing interrupted LLM evaluations to continue without repeating completed calls.
 
-12. Next-Week Plan
+Next-Week Plan
 
 If given another week, I would prioritize:
 
@@ -392,7 +408,7 @@ Expand the golden set with harder and more balanced examples.
 
 Measure latency and token cost for production-readiness analysis.
 
-13. Final Takeaway
+Final Takeaway
 
 The prototype demonstrates an end-to-end support-agent workflow combining:
 

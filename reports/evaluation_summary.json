@@ -4,13 +4,13 @@
     "golden_examples": 200
   },
   "agent": {
-    "intent_accuracy": 0.5862,
-    "intent_macro_f1": 0.4542,
-    "escalation_accuracy": 0.6345,
-    "valid_agent_runs": 145,
-    "agent_errors": 55,
-    "evaluation_coverage": 0.725,
-    "escalation_evaluation_count": 145
+    "intent_accuracy": 0.62,
+    "intent_macro_f1": 0.5169,
+    "escalation_accuracy": 0.615,
+    "valid_agent_runs": 200,
+    "agent_errors": 0,
+    "evaluation_coverage": 1.0,
+    "escalation_evaluation_count": 200
   },
   "baseline_majority": {
     "majority_intent": "general_support",

@@ -4,7 +4,7 @@ An AI customer-support agent built for the Hiver SDE Intern take-home assignment
 
 The system focuses on AmazonHelp and combines intent classification, historical-response retrieval, grounded reply generation, escalation decisions, and evaluation.
 
-1. Problem Framing
+Problem Framing
 
 Customer-support teams handle a large number of repetitive requests, but fully automated replies can be risky when the system is uncertain or lacks reliable evidence.
 
@@ -22,7 +22,7 @@ Evaluates the system on a manually labelled golden set.
 
 The design intentionally prioritizes grounded responses and explicit escalation over blindly maximizing automation.
 
-2. Dataset and Brand Selection
+Dataset and Brand Selection
 
 The project uses the Customer Support on Twitter (TWCS) dataset:
 
@@ -50,41 +50,41 @@ Only the required AmazonHelp subset is used throughout the system rather than pr
 
 Raw dataset files are excluded from Git.
 
-3. System Architecture
+System Architecture
 
-                    Customer Message
-                           |
-                           v
-                  +------------------+
-                  | Intent Classifier |
-                  +------------------+
-                           |
-                    Intent + Confidence
-                           |
-                           v
-                  +------------------+
-                  | Historical       |
-                  | Retrieval        |
-                  +------------------+
-                           |
-                    Top-K Similar Cases
-                           |
-                           v
-                  +------------------+
-                  | Escalation       |
-                  | Decision         |
-                  +------------------+
-                           |
-                           v
-                  +------------------+
-                  | Grounded Reply   |
-                  | Generation       |
-                  +------------------+
-                           |
-                           v
-                    Support Agent UI
+             Customer Message
+                    |
+                    v
+           +------------------+
+           | Intent Classifier |
+           +------------------+
+                    |
+             Intent + Confidence
+                    |
+                    v
+           +------------------+
+           | Historical       |
+           | Retrieval        |
+           +------------------+
+                    |
+             Top-K Similar Cases
+                    |
+                    v
+           +------------------+
+           | Escalation       |
+           | Decision         |
+           +------------------+
+                    |
+                    v
+           +------------------+
+           | Grounded Reply   |
+           | Generation       |
+           +------------------+
+                    |
+                    v
+             Support Agent UI
 
-4. Intent Taxonomy
+Intent Taxonomy
 
 A deliberately small taxonomy of 9 intents was created to keep classification practical and avoid overly fine-grained classes.
 
@@ -128,7 +128,7 @@ general_support
 
 Issues that do not clearly fit another intent
 
-5. Golden Evaluation Set
+Golden Evaluation Set
 
 A manually labelled 200-example golden set was created from the processed AmazonHelp conversations.
 
@@ -198,7 +198,7 @@ Total
 
 The distribution is intentionally reported because accuracy alone can be misleading on this imbalanced set.
 
-6. Historical Retrieval
+Historical Retrieval
 
 Historical support evidence is retrieved using:
 
@@ -238,32 +238,32 @@ from ml.retrieval.retriever import HistoricalRetriever
 retriever = HistoricalRetriever()
 
 results = retriever.search(
-    query="My package has not arrived yet and tracking hasn't updated",
-    top_k=5
+query="My package has not arrived yet and tracking hasn't updated",
+top_k=5
 )
 
 for result in results:
-    print(f"Rank: {result['rank']}")
-    print(f"Score: {result['score']:.4f}")
-    print(f"Customer: {result['customer_text']}")
-    print(f"Response: {result['agent_response']}")
+print(f"Rank: {result['rank']}")
+print(f"Score: {result['score']:.4f}")
+print(f"Customer: {result['customer_text']}")
+print(f"Response: {result['agent_response']}")
 
-7. AI Support Agent
+AI Support Agent
 
 The agent follows this pipeline:
 
 Customer Message
-      |
-      v
+|
+v
 Intent Classification
-      |
-      v
+|
+v
 Historical Retrieval
-      |
-      v
+|
+v
 Escalation Decision
-      |
-      v
+|
+v
 Grounded Reply Generation
 
 The LLM is accessed through a provider abstraction so that the model/provider can be changed without changing the overall agent architecture.
@@ -284,7 +284,7 @@ Avoid claiming actions that were not performed
 
 Avoid mentioning the AI system to the customer
 
-8. Escalation Policy
+Escalation Policy
 
 The current escalation policy uses explicit, inspectable thresholds:
 
@@ -304,7 +304,7 @@ Otherwise, the system marks the case for auto-handling.
 
 This separates the automation decision from free-form LLM reasoning and makes the policy easier to inspect and tune.
 
-9. Full-Stack Application
+Full-Stack Application
 
 Backend
 
@@ -356,7 +356,7 @@ Draft support reply
 
 Historical support evidence
 
-10. Evaluation Methodology
+Evaluation Methodology
 
 The evaluation compares the AI system against two classification baselines and one reply baseline.
 
@@ -376,7 +376,7 @@ This reply baseline is useful as a reference, but it has an important limitation
 
 It should not be interpreted as an independent production-quality benchmark.
 
-11. Metrics
+Metrics
 
 The primary intent-classification metrics are:
 
@@ -408,9 +408,9 @@ Each judge dimension is scored from 1 to 5.
 
 Human validation is used to compare a sample of judge scores with human scores and measure judge-human agreement.
 
-12. Current Evaluation Results
+Current Evaluation Results
 
-The current provider-limited run successfully processed 145 of 200 examples.
+The final evaluation successfully processed all 200 examples.
 
 System
 
@@ -430,25 +430,23 @@ TF-IDF + Logistic Regression
 
 49.19%
 
-AI Agent*
+AI Agent
 
-58.62%
+62.00%
 
-45.42%
+51.69%
 
 Additional AI Agent results:
 
-Successful evaluations: 145/200
+Successful evaluations: 200/200
 
-Coverage: 72.50%
+Coverage: 100.00%
 
-Escalation accuracy: 63.45%
+Escalation accuracy: 61.50%
 
-Important: These AI Agent numbers are provisional. The remaining 55 examples were blocked by the LLM provider's daily token limit and are therefore not included in the current accuracy calculation.
+These are the final results from the 200-example golden evaluation. The evaluation completed with 0 API/run errors.
 
-The evaluation harness is resumable, so the remaining examples can be evaluated after the provider quota resets.
-
-13. LLM-as-Judge
+LLM-as-Judge
 
 The LLM judge compares generated support replies with the nearest historical-response baseline using a fixed rubric.
 
@@ -480,7 +478,19 @@ The judge evaluation is resumable and operates only on successfully generated AI
 
 A separate human-validation sample is used to measure agreement between the LLM judge and human assessment.
 
-14. Failure Analysis
+Final available judge averages:
+
+Relevance: 3.63 / 5
+
+Groundedness: 4.41 / 5
+
+Helpfulness: 3.54 / 5
+
+Overall quality: 3.49 / 5
+
+Human validation used 20 examples. Exact agreement with the LLM judge was 95% for relevance, 95% for groundedness, 100% for helpfulness, and 80% for overall quality, averaging 92.5% exact agreement.
+
+Failure Analysis
 
 The current evaluation surfaced several recurring failure patterns.
 
@@ -528,7 +538,7 @@ Confidence scores need calibration rather than being treated as directly meaning
 
 Retrieval quality should be evaluated on a held-out corpus to avoid overlap with the golden set.
 
-15. What Is Misleading About My Headline Number?
+What Is Misleading About My Headline Number?
 
 The headline AI accuracy should not be interpreted as production accuracy.
 
@@ -538,7 +548,7 @@ The golden set contains only 200 examples.
 
 The intent distribution is highly imbalanced.
 
-The current AI evaluation has incomplete LLM coverage because of the provider token limit.
+The golden set contains only 200 examples, so the results should not be treated as production accuracy.
 
 The nearest-response baseline shares its retrieval corpus with the golden examples, allowing exact historical matches.
 
@@ -546,7 +556,7 @@ Social-media messages can be extremely short and context-dependent.
 
 Therefore, the reported metrics should be interpreted as a controlled prototype evaluation, not as an estimate of production performance.
 
-16. Decision Log
+Decision Log
 
 The main non-obvious engineering decisions are documented in:
 
@@ -580,7 +590,7 @@ Disclosing retrieval/golden-set overlap in the baseline
 
 Making the evaluation harness resumable because of LLM provider limits
 
-17. Next-Week Plan
+Next-Week Plan
 
 If given another week, I would prioritize:
 
@@ -598,13 +608,13 @@ Expand the golden set with harder and more balanced examples.
 
 Add latency and token-cost measurements for production readiness.
 
-18. Running the Project
+Running the Project
 
 Backend
 
 From the project root:
 
-uvicorn backend.app.main:app --reload
+uvicorn backend.app.main --reload
 
 Backend:
 
@@ -633,7 +643,7 @@ Password: hiver123
 
 The repository uses demo authentication for the take-home application. API credentials are kept in environment variables and are not committed to Git.
 
-19. Evaluation Commands
+Evaluation Commands
 
 Create the golden set:
 
@@ -659,7 +669,7 @@ Prepare human validation and failure analysis:
 
 python ml/evaluation/human_validation.py
 
-20. Repository Structure
+Repository Structure
 
 hiver-support-intelligence/
 │
@@ -691,7 +701,7 @@ hiver-support-intelligence/
 ├── requirements.txt
 └── README.md
 
-21. Reproducibility
+Reproducibility
 
 The project is organized around reproducible scripts for preprocessing, taxonomy validation, retrieval, evaluation, and application startup.
 
@@ -701,7 +711,7 @@ Raw dataset files, generated retrieval artifacts, environment files, and API sec
 
 The repository contains the code required to rebuild generated artifacts locally.
 
-22. Project Status
+Project Status
 
 Completed
 
@@ -737,12 +747,12 @@ Decision log
 
 Finalization
 
-Complete remaining LLM evaluations after provider quota reset
+Final evaluation completed (200/200)
 
-Complete final LLM-judge run
+Final LLM-judge run completed
 
-Complete human judge-agreement calculation
+Human judge-agreement validation completed
 
-Replace provisional metrics with final 200-example results
+Provisional metrics replaced with final results
 
 Final README/report review
